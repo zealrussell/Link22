@@ -1,0 +1,6 @@
+# ninja log v5
+3	391	6916744610278164	CMakeFiles/LinkSystem.dir/main.cpp.obj	bcd343161d84331d
+5	407	6916744610437724	CMakeFiles/LinkSystem.dir/Utils/CrcUtil.cpp.obj	51835837a79dd8a7
+407	512	6916744611472800	LinkSystem.exe	f88fc067462de9ff
+7	677	6916732604694662	CMakeFiles/LinkSystem.dir/System/ConstructCenter.cpp.obj	3cb3933e39f0d0d1
+5	711	6916732605033762	CMakeFiles/LinkSystem.dir/System/Link22.cpp.obj	af47b76732a9c768
