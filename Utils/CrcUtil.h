@@ -6,13 +6,13 @@
 #define LINKSYSTEM_CRCUTIL_H
 #include <iostream>
 #include <bitset>
-typedef unsigned short int uint;
+typedef unsigned short int uint16;
 
 class CrcUtil {
     public:
-        static std::bitset<9> crc9(uint data[], int len);
-        std::bitset<16> crc16(uint data[], int len);
-        static void printf();
+        static std::bitset<9> crc9(uint16 data[], int len);
+        static std::bitset<16> crc16(uint16 data[], int len);
+        void get_crc16 (uint8_t *bufData, uint buflen, uint8_t *pcrc);
 };
 
 

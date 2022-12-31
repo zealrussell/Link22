@@ -10,8 +10,9 @@
 class Link22 {
     public:
         Link22();
-        Link22(char const *);
-        std::string getData();
+        Link22(const std::string &msg);
+        std::string getStrData();
+        std::bitset<72> getBitsetData();
     private:
         std::bitset<72> data;
 };

@@ -1,4 +1,4 @@
-E:\Work\CLion\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=E:/Work/CLion/bin/ninja/win/ninja.exe -G Ninja -S F:\Test\Work\LinkSystem -B F:\Test\Work\LinkSystem\cmake-build-debug
+C:\Users\zeal\AppData\Local\JetBrains\CLion2022.2\cygwin_cmake\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/cygdrive/e/Work/CLion/bin/ninja/cygwin/ninja.exe -G Ninja -S /cygdrive/f/Test/Work/LinkSystem -B /cygdrive/f/Test/Work/LinkSystem/cmake-build-debug
 -- Configuring done
 -- Generating done
--- Build files have been written to: F:/Test/Work/LinkSystem/cmake-build-debug
+-- Build files have been written to: /cygdrive/f/Test/Work/LinkSystem/cmake-build-debug

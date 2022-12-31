@@ -10,17 +10,15 @@ Link22::Link22() {
     data.reset();
 }
 
-Link22::Link22(char const * data) {
-
+Link22::Link22(const std::string &msg) {
+    data = std::bitset<72>(msg);
+    cout << "Link22被构造：" << data << endl;
 }
 
-string Link22::getData() {
-    string s = "";
-    for (int i = 0; i = data.size(); ++i) {
-        if (data[i] == 0)
-            s += '0';
-        else
-            s += '1';
-    }
-    return s;
+std::string Link22::getStrData() {
+    return data.to_string();
+}
+
+std::bitset<72> Link22::getBitsetData() {
+    return data;
 }
