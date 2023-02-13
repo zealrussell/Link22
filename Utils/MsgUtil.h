@@ -11,9 +11,15 @@ class MsgUtil {
 public:
     uint8_t* StrToCharArray(std::string &str_data, int char_length);
 
+    std::string StrToBitStr(const std::string &data);
+    std::string BitStrToStr(const std::string &data);
+
     template<size_t N> std::string BitsetToStr(const std::bitset<N> &b);
     template<size_t N> uint8_t *BitsetToCharArray(const std::bitset<N> *b, int arraySize);
+    std::string CharArrayToBitStr(const uint8_t *data, int char_length);
     std::bitset<72> *CharArrayToBitset(const uint8_t *charArray, int arraySize);
+
+    std::string getDataFromMessage(const std::string &message);
 };
 
 template<size_t N> std::string MsgUtil::BitsetToStr(const std::bitset<N> &b) {

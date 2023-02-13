@@ -22,3 +22,7 @@ std::string Link22::getStrData() {
 std::bitset<72> Link22::getBitsetData() {
     return data;
 }
+
+void Link22::setLength(int length) {
+
+}
