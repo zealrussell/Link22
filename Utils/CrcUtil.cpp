@@ -124,7 +124,7 @@ void CrcUtil::get_crc16(uint8_t *bufData, uint buflen, uint8_t *pcrc) {
     }
 
 
-    printf("CRC::code=%X\n", CRC);
+    printf("CRC::code = %X\n", CRC);
     //低位在前，高位在后
     pcrc[0] = (unsigned char) (CRC & 0x00ff);
     pcrc[1] = (unsigned char) (CRC >> 8);

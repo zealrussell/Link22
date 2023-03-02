@@ -7,6 +7,8 @@
 #include "FnpMessage.h"
 #include "FnMessage.h"
 
+#define DMSGLEN 2 * MSGLEN
+
 ConstructCenter::ConstructCenter(){
     printf("开始构造\n");
     initCenter();
@@ -22,6 +24,8 @@ uint8_t *ConstructCenter::beginAssemble (const std::bitset<72> &b1, const std::b
     uint8_t *aesCode = beginAes(p, 2);
     uint8_t *crcCode = beginCrc(aesCode, 18);
     uint8_t *rsCode = beginRs(crcCode, aesCode,18);
+    delete aesCode;
+    delete crcCode;
 
     return rsCode;
 }
@@ -37,9 +41,12 @@ uint8_t *ConstructCenter::beginDisassemble(const uint8_t *data) {
 
     uint8_t crcCode[2];
     uint8_t aesCode[18];
+    // 从rsCode中提取crcCode和aesCode
     memcpy(crcCode, rsCode, 2 * sizeof(uint8_t));
     memcpy(aesCode, rsCode + 3 * sizeof(uint8_t), 18 * sizeof(uint8_t));
+    delete rsCode;
 
+    // 通过比较crcCode，判断传输过程中是否发生错误
     bool crcFlag = beginDeCrc(crcCode, aesCode, 18);
     if (!crcFlag) {
         printf("CRC码校验错误！！！\n");
@@ -80,6 +87,7 @@ uint8_t *ConstructCenter::beginAes(const std::bitset<72> *data ,int arrayNum) {
     printf("AES::after aes %d : ",outlen);
     print(output, outlen);
 
+    delete input;
     printf("-------------------------------------------end AES-------------------------------------\n\n");
     return output;
 }
@@ -93,15 +101,15 @@ uint8_t *ConstructCenter::beginAes(const std::bitset<72> *data ,int arrayNum) {
  */
 uint8_t *ConstructCenter::beginCrc(const uint8_t *msg, int arrayNum) {
     printf("------------------------------------------begin CRC16----------------------------------\n");
-    uint8_t *data;
+    uint8_t data[18] = {0};
     memcpy(data, msg, arrayNum * sizeof(uint8_t));
-    uint8_t *crcCode = new uint8_t[2];
-    crcUtil.get_crc16(data,arrayNum, crcCode);
+    uint8_t *code = new uint8_t[2];
+    crcUtil.get_crc16(data,arrayNum, code);
 
     printf("Crc code is: ");
-    print(crcCode,2 * sizeof(uint8_t));
+    print(code,2 * sizeof(uint8_t));
     printf("------------------------------------------end CRC16------------------------------------\n\n");
-    return crcCode;
+    return code;
 }
 
 
@@ -200,7 +208,7 @@ uint8_t *ConstructCenter::constructMessage() {
     printf(" 请选择待填充的Link22消息类型：");
     printf("1. F0n.m-p    2. Fn-p     3. Fn\n");
     int n, m, p, type;
-    uint8_t *res;
+    uint8_t *res = nullptr;
     std::cin >> type;
     if (type == 1) {
         printf("将生成 F0n.m-p 消息....\n");
@@ -249,12 +257,8 @@ uint8_t *ConstructCenter::beginConstruct(const std::string &msg, int type, int n
     if (type == 1) MSGLEN = 55;
     else if (type == 2) MSGLEN = 61;
     else MSGLEN = 62;
-    // while(str.length() % (2 * MSGLEN) != 0) str += '0';
-    // printf("补齐后的%lu比特二进制消息为：%s\n\n",str.length(),str.c_str());
-    // int num = str.length() / (MSGLEN * 2);
-    // if (num % MSGLEN != 0) num++;
     int num = 0;
-    while (num * 2 * MSGLEN < strLen) num++;
+    while (num * DMSGLEN < strLen) num++;
     printf("将生成%d个码元消息\n",num);
     uint8_t *temp = new uint8_t [num * 36 * sizeof(uint8_t)];
     uint8_t *res = temp;
@@ -262,29 +266,30 @@ uint8_t *ConstructCenter::beginConstruct(const std::string &msg, int type, int n
     int remainLen = str.length();
     int i = 0;
     // 3.1 处理整的部分
-    while(remainLen > 2 * MSGLEN) {
-        uint8_t *data;
+    while(remainLen > DMSGLEN) {
+        uint8_t *data = nullptr;
         if (type == 1) {
             F0nMessage m1(str.substr(i,MSGLEN), n, m, p);
-            F0nMessage m2(str.substr(i + MSGLEN,MSGLEN * 2), n, m, p);
+            F0nMessage m2(str.substr(i + MSGLEN,DMSGLEN), n, m, p);
             data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
         } else if (type == 2) {
             FnpMessage m1(str.substr(i,MSGLEN), n, p);
-            FnpMessage m2(str.substr(i + MSGLEN,MSGLEN * 2), n, p);
+            FnpMessage m2(str.substr(i + MSGLEN,DMSGLEN), n, p);
             data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
         } else if (type == 3) {
             FnMessage m1(str.substr(i,MSGLEN), n);
-            FnMessage m2(str.substr(i + MSGLEN,MSGLEN * 2), n);
+            FnMessage m2(str.substr(i + MSGLEN,DMSGLEN), n);
             data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
         }
-        remainLen -= 2 * MSGLEN;
-        i += 2 * MSGLEN;
+        remainLen -= DMSGLEN;
+        i += DMSGLEN;
         memcpy(temp, data, 36);
         temp += 36 * sizeof(uint8_t);
+        delete data;
     }
     // 3.2 处理不足的部分
-    if(remainLen > 0 && remainLen <= 2 * MSGLEN) {
-        uint8_t *data;
+    if(remainLen > 0 && remainLen <= DMSGLEN) {
+        uint8_t *data = nullptr;
         if(remainLen > MSGLEN) {
             if (type == 1) {
                 F0nMessage m1(str.substr(i,MSGLEN), n, m, p);
@@ -316,26 +321,9 @@ uint8_t *ConstructCenter::beginConstruct(const std::string &msg, int type, int n
         }
         memcpy(temp, data, 36);
         temp += 36 * sizeof(uint8_t);
+        delete data;
     }
 
-//    for(int i = 0; i < (num - 1) * 2 * MSGLEN; i += MSGLEN * 2) {
-//        uint8_t *data;
-//        if (type == 1) {
-//            F0nMessage m1(str.substr(i, i + MSGLEN), n, m, p);
-//            F0nMessage m2(str.substr(i + MSGLEN, i + MSGLEN * 2), n, m, p);
-//            data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
-//        } else if (type == 2) {
-//            FnpMessage m1(str.substr(i,i + MSGLEN), n, p);
-//            FnpMessage m2(str.substr(i + MSGLEN, i + MSGLEN * 2), n, p);
-//            data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
-//        } else if (type == 3) {
-//            FnMessage m1(str.substr(i,i + MSGLEN), n);
-//            FnMessage m2(str.substr(i + MSGLEN, i + MSGLEN * 2), n);
-//            data = beginAssemble(m1.getBitsetData(), m2.getBitsetData());
-//        }
-//        memcpy(temp, data, 36);
-//        temp += 36 * sizeof(uint8_t);
-//    }
     printf("最终结果为：");
     print(res, 36 * num);
     printf("\n\n\n");
@@ -343,7 +331,10 @@ uint8_t *ConstructCenter::beginConstruct(const std::string &msg, int type, int n
     return res;
 }
 
-// 解密
+/**
+ * 解密函数
+ * @param data 待解密是数据
+ */
 void ConstructCenter::crackMessage(const uint8_t *data) {
     int arrayNum;
 
@@ -360,19 +351,21 @@ void ConstructCenter::crackMessage(const uint8_t *data) {
         // 2. 解码成 18，即两个 72bit 数据
         uint8_t *msg = beginDisassemble(tmp);
         std::string str = msgUtil.CharArrayToBitStr(msg, 18);
-        // 3. 从中提取信息
+        delete msg;
+        // 3. 从link22消息中提取信息
         if (str.length() == 144) {
             message += msgUtil.getDataFromMessage(str.substr(0, 72));
             message += msgUtil.getDataFromMessage(str.substr(72,72));
         }
     }
+    // 将二进制消息转换成字符消息
     std::string res = msgUtil.BitStrToStr(message);
     printf("解密后的消息为：%s\n", res.c_str());
 }
 
 
 /**
- * 更新aes秘钥
+ * 更新aes秘钥操作
  * @param newKey 新秘钥
  */
 void ConstructCenter::changeKey(const uint8_t *newKey) {
@@ -381,7 +374,11 @@ void ConstructCenter::changeKey(const uint8_t *newKey) {
     print(newKey, 16);
 }
 
-
+/**
+ * 打印uint8数组
+ * @param state 数组
+ * @param len 数组长度
+ */
 void ConstructCenter::print(const uint8_t *state, int len)
 {
     int i;

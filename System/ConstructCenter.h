@@ -39,7 +39,7 @@ class ConstructCenter {
         // 编码相关
         uint8_t *beginAes(const std::bitset<72> *data, int arrayNum);
         uint8_t *beginCrc(const uint8_t *data, int arrayNum);
-        uint8_t *beginRs(const uint8_t *crcCode, const uint8_t *msgCode, int arrayNum);
+        uint8_t *beginRs(const uint8_t *crcCode, const uint8_t *msgCode, int arrayNum = 18);
 
         // 解码相关
         uint8_t *beginDeAes(const uint8_t *data, int arrayNum);

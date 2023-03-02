@@ -7,7 +7,7 @@
 #include <iostream>
 #include <bitset>
 typedef unsigned short int uint16;
-
+typedef unsigned int uint;
 class CrcUtil {
     public:
         static std::bitset<9> crc9(uint16 data[], int len);
